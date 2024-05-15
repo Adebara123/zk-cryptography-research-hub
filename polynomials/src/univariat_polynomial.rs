@@ -1,4 +1,4 @@
-use crate::Polynomial;
+
 use ark_ff::Field;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -132,10 +132,39 @@ impl <F: Field> UnivariantPolynomial<F> {
 
     }
 
-    fn interpolate () {
-        
-    }
+    fn interpolate(x_coordinates: &Vec<F>, y_coordinates: &Vec<F>) -> Result<Self, &'static str> {
 
+        if x_coordinates.len() != y_coordinates.len() {
+            return Err("Vectors x_coordinates and y_coordinates must have the same length.");
+        }
+        assert_eq!(x_coordinates.len(), y_coordinates.len(), "Vectors x_coordinates and y_coordinates must have the same length.");
+    
+        let n = x_coordinates.len();
+        let mut coefficients = vec![F::zero(); n];
+    
+        for i in 0..n {
+            let mut li = vec![F::one(); n];
+            for j in 0..n {
+                if i != j {
+                    let xi = x_coordinates[i];
+                    let xj = x_coordinates[j];
+                    for k in (0..n).rev() {
+                        li[k] = if k == 0 {
+                            -xj * li[k]
+                        } else {
+                            li[k] * (xi - xj) + li[k-1]
+                        };
+                    }
+                }
+            }
+            let yi = y_coordinates[i];
+            for k in 0..n {
+                coefficients[k] += yi * li[k] / li.iter().rev().fold(F::one(), |acc, &x| acc * x);
+            }
+        }
+    
+        Ok(Self::new(coefficients))
+    }
 
 
 
@@ -147,6 +176,13 @@ impl <F: Field> UnivariantPolynomial<F> {
 
 #[cfg(test)]
 mod tests {
+
+    use ark_ff::Field;
+    #[test]
+    fn test_polynomial_addition() {
+
+        
+    }
 
 
     
