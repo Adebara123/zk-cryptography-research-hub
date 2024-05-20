@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+     "polynomials", 
+     "shamir_secret_sharing",
+]

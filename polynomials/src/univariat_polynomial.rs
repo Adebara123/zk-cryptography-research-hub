@@ -1,12 +1,14 @@
 
 use ark_ff::Field;
+use ark_ff::PrimeField;
+
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct UnivariantPolynomial<F: Field> {
     coefficients: Vec<F>,
 }
 
-impl <F: Field> UnivariantPolynomial<F> {
+impl <F: PrimeField> UnivariantPolynomial<F> {
     
     fn new(coefficient: Vec<F>) -> Self{
 
@@ -37,10 +39,11 @@ impl <F: Field> UnivariantPolynomial<F> {
             return self.clone();
         }
 
-        // Check if both length are equal 
-        // [0,1,2,3] [4,2,1,2]
+        if self.check_zero_len() != other.check_zero_len() {
+            panic!("Cannot add two polynomials of different length")
+        }
 
-        if self.coefficient_len() == other.coefficient_len() {
+
             let mut new_coefficient = self.coefficients.clone();
             for i in 0..self.coefficient_len() {
 
@@ -48,42 +51,7 @@ impl <F: Field> UnivariantPolynomial<F> {
             }
 
             return Self::new(new_coefficient);
-        }
-
-        else {
-
-            // If the first one is longer than the second, slice it and add it up to that point 
-
-            let first_len = self.coefficient_len();
-            let second_len = other.coefficient_len() ;
-            if first_len > second_len {
-
-                let mut result_coefficient = other.coefficients.clone();
-
-                for i in 0..second_len {
-                    result_coefficient[i] += self.coefficients[i];
-                }
-                let remaining_slice  = &self.coefficients[second_len..first_len-1];
-
-                result_coefficient.extend( remaining_slice);
-
-                return Self::new(result_coefficient);
-            } 
-            
-            else  {
-                let mut result_coefficient = self.coefficients.clone();
-
-                for i in 0..first_len {
-                    result_coefficient[i] += other.coefficients[i];
-                }
-                
-                let remaining_slice = &other.coefficients[first_len..second_len-1];
-
-                result_coefficient.extend(remaining_slice);
-
-                return Self::new(result_coefficient);
-            }
-        }
+      
         
     }
 
@@ -166,10 +134,6 @@ impl <F: Field> UnivariantPolynomial<F> {
         Ok(Self::new(coefficients))
     }
 
-
-
-
-
     
 
 }
@@ -178,9 +142,27 @@ impl <F: Field> UnivariantPolynomial<F> {
 mod tests {
 
     use ark_ff::Field;
-    #[test]
-    fn test_polynomial_addition() {
+    use ark_ff::PrimeField;
+    use super::UnivariantPolynomial;
+    use ark_test_curves::bls12_381::Fr;
 
+    type F = Fr;
+    type poly = UnivariantPolynomial<F>;
+
+    #[test]
+    fn test_polynomial_addition_equal_length() {
+
+        let poly_1 = poly::new(vec![F::from(1), F::from(2), F::from(3)]);
+        let poly_2 = poly::new(vec![F::from(4), F::from(5), F::from(6)]);
+
+        assert!(poly_1.add(poly_2) == poly::new(vec![F::from(5), F::from(7), F::from(9)]));
+    }
+
+    #[test]
+    fn test_polynomial_addition_different_length() {
+
+        let poly_1 = poly::new(vec![F::from(1), F::from(2), F::from(3)]);
+        let poly_2 = poly::new(vec![F::from(4), F::from(5), F::from(6), F::from(7)]);
         
     }
 
