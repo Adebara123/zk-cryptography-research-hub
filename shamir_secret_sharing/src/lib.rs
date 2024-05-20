@@ -1,1 +1,1 @@
-pub mod sharir_secret_sharing;
+pub mod shamir_secret_sharing;
