@@ -27,7 +27,7 @@ impl <F: PrimeField> UnivariantPolynomial<F> {
         }
     }
 
-    fn add (&self, other: Self) -> Self{
+    pub fn add (&self, other: Self) -> Self{
 
         // Check if the any of them has zero length coefficient 
         
@@ -56,7 +56,7 @@ impl <F: PrimeField> UnivariantPolynomial<F> {
     }
 
 
-    fn mul (&self, other: Self) -> Self {
+    pub fn mul (&self, other: Self) -> Self {
 
         // check if any of them is zero 
         if self.check_zero_len() {
@@ -81,11 +81,15 @@ impl <F: PrimeField> UnivariantPolynomial<F> {
             }
         }
 
+        while let Some(true) = coefficient_res.last().map(|x| *x == F::zero()) {
+            coefficient_res.pop();
+        }
+
         Self::new(coefficient_res)
     }
 
 
-    fn evaluate(self, eval: F) -> F {
+    pub fn evaluate(self, eval: F) -> F {
         
         if eval == F::zero() {
             return F::zero();
@@ -100,7 +104,7 @@ impl <F: PrimeField> UnivariantPolynomial<F> {
 
     }
 
-    fn interpolate(x_coordinates: &Vec<F>, y_coordinates: &Vec<F>) -> Result<Self, &'static str> {
+    pub fn interpolate(x_coordinates: &Vec<F>, y_coordinates: &Vec<F>) -> Result<Self, &'static str> {
 
         if x_coordinates.len() != y_coordinates.len() {
             return Err("Vectors x_coordinates and y_coordinates must have the same length.");
@@ -150,7 +154,7 @@ mod tests {
     type poly = UnivariantPolynomial<F>;
 
     #[test]
-    fn test_polynomial_addition_equal_length() {
+    fn test_polynomial_addition() {
 
         let poly_1 = poly::new(vec![F::from(1), F::from(2), F::from(3)]);
         let poly_2 = poly::new(vec![F::from(4), F::from(5), F::from(6)]);
@@ -159,11 +163,12 @@ mod tests {
     }
 
     #[test]
-    fn test_polynomial_addition_different_length() {
+    fn test_polynomial_multiplication() {
 
-        let poly_1 = poly::new(vec![F::from(1), F::from(2), F::from(3)]);
-        let poly_2 = poly::new(vec![F::from(4), F::from(5), F::from(6), F::from(7)]);
+        let poly_1 = poly::new(vec![F::from(1), F::from(2)]);
+        let poly_2 = poly::new(vec![F::from(4), F::from(5)]);
         
+        assert_eq!(poly_1.mul(poly_2) , poly::new(vec![F::from(4), F::from(13), F::from(10)]));
     }
 
 
