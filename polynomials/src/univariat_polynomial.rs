@@ -171,6 +171,13 @@ mod tests {
         assert_eq!(poly_1.mul(poly_2) , poly::new(vec![F::from(4), F::from(13), F::from(10)]));
     }
 
+    #[test]
+    fn test_polynomial_evaluation() {
+        
+        let poly = poly::new(vec![F::from(1), F::from(2), F::from(3)]);
+        assert_eq!(poly.evaluate(F::from(10)), F::from(321));
+    }
+
 
     
 }
