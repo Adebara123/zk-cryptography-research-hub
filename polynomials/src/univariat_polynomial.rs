@@ -104,42 +104,70 @@ impl <F: PrimeField> UnivariantPolynomial<F> {
 
     }
 
-    pub fn interpolate(x_coordinates: &Vec<F>, y_coordinates: &Vec<F>) -> Result<Self, &'static str> {
 
-        if x_coordinates.len() != y_coordinates.len() {
-            return Err("Vectors x_coordinates and y_coordinates must have the same length.");
-        }
-        assert_eq!(x_coordinates.len(), y_coordinates.len(), "Vectors x_coordinates and y_coordinates must have the same length.");
-    
-        let n = x_coordinates.len();
-        let mut coefficients = vec![F::zero(); n];
-    
-        for i in 0..n {
-            let mut li = vec![F::one(); n];
-            for j in 0..n {
-                if i != j {
-                    let xi = x_coordinates[i];
-                    let xj = x_coordinates[j];
-                    for k in (0..n).rev() {
-                        li[k] = if k == 0 {
-                            -xj * li[k]
-                        } else {
-                            li[k] * (xi - xj) + li[k-1]
-                        };
-                    }
-                }
+}
+
+
+/// A vector containing the coefficients of the Lagrange basis polynomial \( L_i(x) \).
+fn lagrange_basis<F: PrimeField>(i: usize, x_coordinates: &[F]) -> Vec<F> {
+    // Get the \( i \)-th \( x \) coordinate
+    let x_i = x_coordinates[i];
+    // Initialize the numerator polynomial with 1
+    let mut num = vec![F::one()];
+
+    // Iterate over all other \( x \) coordinates to construct the basis polynomial
+    for (j, &x_j) in x_coordinates.iter().enumerate() {
+        // Skip if \( j = i \)
+        if i != j {
+            // Construct polynomial (x - x_j)
+            let mut new_num = vec![F::zero(); num.len() + 1]; // Allocate space for degree n-1
+            for k in 0..num.len() {
+                new_num[k + 1] += num[k]; // Increase the degree of each term by 1
+                new_num[k] -= num[k] * x_j; // Multiply each term by (x - x_j)
             }
-            let yi = y_coordinates[i];
-            for k in 0..n {
-                coefficients[k] += yi * li[k] / li.iter().rev().fold(F::one(), |acc, &x| acc * x);
-            }
+            num = new_num; // Update the numerator polynomial
         }
-    
-        Ok(Self::new(coefficients))
     }
 
-    
+    // Compute the denominator of the basis polynomial
+    let mut den = F::one();
+    for (j, &x_j) in x_coordinates.iter().enumerate() {
+        if i != j {
+            den *= x_i - x_j;
+        }
+    }
 
+    // Compute the inverse of the denominator
+    let den_inv = den.inverse().unwrap();
+    // Normalize the coefficients of the numerator polynomial by dividing by the denominator
+    for coeff in num.iter_mut() {
+        *coeff *= den_inv;
+    }
+
+    // Return the coefficients of the Lagrange basis polynomial
+    num
+}
+
+
+/// A vector containing the coefficients of the Lagrange interpolating polynomial.
+fn lagrange_interpolate<F: PrimeField>(x_coordinates: &[F], y_coordinates: &[F]) -> Vec<F> {
+    // Get the number of points
+    let n = x_coordinates.len();
+    // Initialize the result vector with zeros
+    let mut result = vec![F::zero(); n];
+
+    // Iterate over each \( y \) coordinate
+    for (i, &y_i) in y_coordinates.iter().enumerate() {
+        // Compute the Lagrange basis polynomial for the \( i \)-th point
+        let l_i = lagrange_basis(i, x_coordinates);
+        // Accumulate the scaled basis polynomial into the result
+        for (j, &coeff) in l_i.iter().enumerate() {
+            result[j] += y_i * coeff;
+        }
+    }
+
+    // Return the coefficients of the Lagrange interpolating polynomial
+    result
 }
 
 #[cfg(test)]
@@ -147,6 +175,8 @@ mod tests {
 
     use ark_ff::Field;
     use ark_ff::PrimeField;
+    use crate::univariat_polynomial::lagrange_interpolate;
+
     use super::UnivariantPolynomial;
     use ark_test_curves::bls12_381::Fr;
 
@@ -176,6 +206,28 @@ mod tests {
         
         let poly = poly::new(vec![F::from(1), F::from(2), F::from(3)]);
         assert_eq!(poly.evaluate(F::from(10)), F::from(321));
+    }
+
+    #[test]
+    fn test_polynomial_interpolation() {
+        
+        let x_coordinates: Vec<F> = vec![
+            F::from(1u64),
+            F::from(2u64),
+            F::from(3u64),
+        ];
+    
+        let y_coordinates: Vec<F> = vec![
+            F::from(6u64),
+            F::from(17u64),
+            F::from(34u64),
+        ];
+    
+        let expected_coefficients = vec![F::from(1u64), F::from(2u64), F::from(3u64)];
+        // let coefficients = lagrange_interpolate(&x_coordinates, &y_coordinates);
+        // assert_eq!(coefficients, expected_coefficients);
+        
+        assert_eq!(lagrange_interpolate(&x_coordinates, &y_coordinates), expected_coefficients)
     }
 
 
