@@ -56,37 +56,31 @@ impl <F: PrimeField> UnivariantPolynomial<F> {
     }
 
 
-    pub fn mul (&self, other: Self) -> Self {
-
-        // check if any of them is zero 
-        if self.check_zero_len() {
-            return Self::new(Vec::new()) ;
+    pub fn mul(&self, other: Self) -> Self {
+        // If either polynomial is zero, return a zero polynomial
+        if self.check_zero_len() || other.check_zero_len() {
+            return Self::new(Vec::new());
         }
 
-        if other.check_zero_len() {
-            return Self::new(Vec::new()) ;
-        }
-
+        // Degree of the resulting polynomial
         let first_degree = self.coefficient_len();
         let second_degree = other.coefficient_len();
-        let new_highestdegree = first_degree + second_degree;
-        
-        let mut coefficient_res: Vec<F> = vec![F::zero(); new_highestdegree + 1];
-        
-        for i in 0..first_degree {
+        let new_highest_degree = first_degree + second_degree - 2; // -2 because degrees are length - 1
 
+        // Initialize the coefficients of the resulting polynomial with zeros
+        let mut coefficient_res: Vec<F> = vec![F::zero(); new_highest_degree + 1];
+
+        // Compute the coefficients of the resulting polynomial
+        for i in 0..first_degree {
             for j in 0..second_degree {
-                let product = self.coefficients[i] * other.coefficients[j];
-                coefficient_res[i + j] += product
+                coefficient_res[i + j] += self.coefficients[i] * other.coefficients[j];
             }
         }
 
-        while let Some(true) = coefficient_res.last().map(|x| *x == F::zero()) {
-            coefficient_res.pop();
-        }
-
+        // Return the resulting polynomial
         Self::new(coefficient_res)
-    }
+    
+}
 
 
     pub fn evaluate(self, eval: F) -> F {
