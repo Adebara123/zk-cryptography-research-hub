@@ -10,7 +10,7 @@ pub struct UnivariantPolynomial<F: Field> {
 
 impl <F: PrimeField> UnivariantPolynomial<F> {
     
-    fn new(coefficient: Vec<F>) -> Self{
+    pub fn new(coefficient: Vec<F>) -> Self{
 
         Self { coefficients: coefficient }
     }
