@@ -83,20 +83,18 @@ impl <F: PrimeField> UnivariantPolynomial<F> {
 }
 
 
-    pub fn evaluate(self, eval: F) -> F {
-        
-        if eval == F::zero() {
-            return F::zero();
-        }
+pub fn evaluate(&self, eval: F) -> F {
+    // Initialize the result as zero
+    let mut res = F::zero();
 
-        let mut res = F::zero();
-        for i in 0..self.coefficient_len() {
-            res += (eval.pow([i as u64])) * self.coefficients[i];
-        }
-
-        res
-
+    // Iterate over the coefficients in reverse order to use Horner's method
+    for &coeff in self.coefficients.iter().rev() {
+        res = res * eval + coeff;
     }
+
+    res
+}
+
 
 
 }
@@ -144,7 +142,7 @@ fn lagrange_basis<F: PrimeField>(i: usize, x_coordinates: &[F]) -> Vec<F> {
 
 
 /// A vector containing the coefficients of the Lagrange interpolating polynomial.
-fn lagrange_interpolate<F: PrimeField>(x_coordinates: &[F], y_coordinates: &[F]) -> Vec<F> {
+pub fn lagrange_interpolate<F: PrimeField>(x_coordinates: &[F], y_coordinates: &[F]) -> Vec<F> {
     // Get the number of points
     let n = x_coordinates.len();
     // Initialize the result vector with zeros
@@ -167,8 +165,7 @@ fn lagrange_interpolate<F: PrimeField>(x_coordinates: &[F], y_coordinates: &[F])
 #[cfg(test)]
 mod tests {
 
-    use ark_ff::Field;
-    use ark_ff::PrimeField;
+ 
     use crate::univariat_polynomial::lagrange_interpolate;
 
     use super::UnivariantPolynomial;
