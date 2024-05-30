@@ -79,8 +79,8 @@ impl <F: PrimeField> MultiLinearPolynomial<F> {
         // sum them up 
 
         for i in 0..longer_len {
-            let add = longer_eval[i] + new_longer_eval[i];
-            sum_result.push(add);
+            sum_result[i] =longer_eval[i] + new_longer_eval[i];
+         
         }        
 
 
@@ -114,6 +114,14 @@ mod tests {
     }
 
 
+    #[test] 
+    fn test_different_length_evaluation () {
+        let eval_1 = poly::new(3, vec![F::from(1), F::from(2), F::from(3), F::from(4), F::from(1), F::from(2), F::from(3), F::from(4)]);
+
+        let eval_2 = poly::new(2,vec![F::from(1), F::from(2), F::from(3), F::from(4)]);
+
+        assert_eq!(eval_1.add(eval_2), poly::new(3, vec![F::from(2), F::from(3), F::from(5), F::from(6), F::from(4), F::from(5), F::from(7), F::from(8)]));
+    }
 
 
 
