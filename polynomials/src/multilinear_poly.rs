@@ -22,7 +22,7 @@ impl <F: PrimeField> MultiLinearPolynomial<F> {
         assert!(evaluations.len() > 0 as usize, "evaluations cannot be zero");
 
         // this check that the length of the evaluations is equal to 2 to the power of number of variables
-        assert!(evaluations.len() == (1 >> _variables), "wrong length of eval");
+        assert!(evaluations.len() == (2usize.pow(_variables as u32)), "wrong length of eval");
 
 
         Self {
@@ -90,3 +90,31 @@ impl <F: PrimeField> MultiLinearPolynomial<F> {
 }
 
 
+#[cfg(test)]
+mod tests {
+
+
+    use crate::multilinear_poly::*;
+
+    use ark_test_curves::bls12_381::Fr;
+
+    type F = Fr;
+    type poly = MultiLinearPolynomial<F>;
+
+
+    #[test] 
+
+    fn test_equal_length_evaluatios () {
+
+        let eval_1 = poly::new(2, vec![F::from(1), F::from(2), F::from(3), F::from(4)]);
+
+        let eval_2 = poly::new(2,vec![F::from(1), F::from(2), F::from(3), F::from(4)]);
+
+        assert_eq!(eval_1.add(eval_2), poly::new(2, vec![F::from(2), F::from(4), F::from(6), F::from(8)]));
+    }
+
+
+
+
+
+}
