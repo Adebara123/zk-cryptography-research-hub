@@ -132,6 +132,8 @@ impl <F: PrimeField> MultiLinearPolynomial<F> {
 mod tests {
 
 
+    use std::vec;
+
     use crate::multilinear_pol::multilinear_poly::*;
 
     use ark_test_curves::bls12_381::Fr;
@@ -169,6 +171,21 @@ mod tests {
         let new_polynomial = MultiLinearPolynomial::partial_eval(&polynomial, evaluation_point,0);
         assert_eq!(new_polynomial.evaluations, vec![F::from(6), F::from(15)]);
     }
+
+
+    #[test]
+    fn test_full_evalaution() {
+        let evaluations = vec![F::from(0),F::from(0),F::from(2),F::from(5)];
+        let polynomial = MultiLinearPolynomial::new(2,evaluations);
+        let eval_points = vec![F::from(3), F::from(5)];
+        let result = MultiLinearPolynomial::eval_full(&polynomial, &eval_points);
+
+
+        assert_eq!(result, F::from(51));
+
+    }
+
+
 }
 
 
