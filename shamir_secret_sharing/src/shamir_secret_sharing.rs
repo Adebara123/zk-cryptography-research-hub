@@ -1,6 +1,6 @@
 use ark_ff::PrimeField;
 use rand::{rngs, thread_rng};
-use polynomials::univariat_polynomial;
+use polynomials::univariate_poly::univariat_polynomial;
 
 
 pub fn create_shares<F: PrimeField>(seceret: F, threshold: u64, members: u64) ->  (Vec<F>, Vec<F>){
