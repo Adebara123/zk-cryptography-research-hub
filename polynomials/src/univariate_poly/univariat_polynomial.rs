@@ -166,7 +166,7 @@ pub fn lagrange_interpolate<F: PrimeField>(x_coordinates: &[F], y_coordinates: &
 mod tests {
 
  
-    use crate::univariat_polynomial::lagrange_interpolate;
+    use crate::univariate_poly::univariat_polynomial::lagrange_interpolate;
 
     use super::UnivariantPolynomial;
     use ark_test_curves::bls12_381::Fr;

@@ -2,6 +2,8 @@
 use ark_ff::Field;
 use ark_ff::PrimeField;
 
+use super::utiles::generate_pairs;
+
 
 // The multilinear implementation follows ther assumed eveluation by the boolean hypercube 
 
@@ -87,6 +89,42 @@ impl <F: PrimeField> MultiLinearPolynomial<F> {
         Self::new(higher_variable, sum_result)
 
     }
+
+
+    pub fn partial_eval(&self, eval_point: F, idx: usize) -> Self {
+        let evals_ref = &self.evaluations;
+        let mut new_results = Vec::with_capacity(evals_ref.len() / 2);
+
+        for (first, second) in generate_pairs(evals_ref.len(), idx) {
+            let val1 = &evals_ref[first];
+            let val2 = &evals_ref[second];
+
+            let combined_result: F = (eval_point * val2) + (F::one() - eval_point) * val1;
+            new_results.push(combined_result);
+        }
+
+        Self { 
+            variables: self.variables - 1, 
+            evaluations: new_results 
+        }
+    }
+
+    
+
+    pub fn eval_full(&self, eval_points: &[F]) -> F {
+        assert_eq!(eval_points.len(), self.variables, "Length of eval_points must equal number_of_variables");
+
+        let mut final_result: F = F::one();
+        let mut current_eval = self.clone();
+
+        for &point in eval_points.iter() {
+            current_eval = current_eval.partial_eval(point, 0);
+        }
+        
+        final_result = current_eval.evaluations[0];
+        final_result
+    }
+
 }
 
 
@@ -94,7 +132,7 @@ impl <F: PrimeField> MultiLinearPolynomial<F> {
 mod tests {
 
 
-    use crate::multilinear_poly::*;
+    use crate::multilinear_pol::multilinear_poly::*;
 
     use ark_test_curves::bls12_381::Fr;
 
@@ -123,6 +161,14 @@ mod tests {
         assert_eq!(eval_1.add(eval_2), poly::new(3, vec![F::from(2), F::from(3), F::from(5), F::from(6), F::from(4), F::from(5), F::from(7), F::from(8)]));
     }
 
-
-
+    #[test]
+    fn test_partial_evaluation(){
+        let evaluations = vec![F::from(0),F::from(0),F::from(2),F::from(5)];
+        let polynomial = MultiLinearPolynomial::new(2,evaluations);
+        let evaluation_point = F::from(3);
+        let new_polynomial = MultiLinearPolynomial::partial_eval(&polynomial, evaluation_point,0);
+        assert_eq!(new_polynomial.evaluations, vec![F::from(6), F::from(15)]);
+    }
 }
+
+
