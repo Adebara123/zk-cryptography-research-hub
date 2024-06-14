@@ -179,13 +179,9 @@ mod tests {
         let polynomial = MultiLinearPolynomial::new(2,evaluations);
         let eval_points = vec![F::from(3), F::from(5)];
         let result = MultiLinearPolynomial::eval_full(&polynomial, &eval_points);
-
-
         assert_eq!(result, F::from(51));
 
     }
 
 
 }
-
-
