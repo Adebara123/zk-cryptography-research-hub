@@ -1,32 +1,37 @@
+use sha3::{Keccak256, Digest};
 use ark_ff::PrimeField;
-use sha3::Keccak256;
 
-use crate::transcript_interface::TranscriptInterface;
-
-
+// Define data structure
+#[derive(Debug, Clone)]
 pub struct Transcript {
     hasher: Keccak256,
 }
 
-
-impl TranscriptInterface for Transcript {
-    fn new() -> Self {
-        Self { hasher: Keccak256::new() }
+impl Transcript {
+    // Constructor for creating a new Transcript instance
+    pub fn new() -> Self {
+        Self {
+            hasher: Keccak256::new(),
+        }
     }
 
-    fn submit_data(&mut self, input_data: &[u8]) {
-        self.hasher.update(input_data)
+    // Method to append new data to the hasher
+    pub fn append(&mut self, new_data: &[u8]) {
+        self.hasher.update(new_data);
     }
 
-    fn generate_challenge(&mut self) -> [u8; 32] {
-        let update_data = self.hasher.finalize_reset();
-        self.hasher.update(&update_data);
+    // Method to sample a challenge from the hasher
+    pub fn sample_challenge(&mut self) -> [u8; 32] {
         let mut result = [0_u8; 32];
-        result.copy_from_slice(&update_data);
+        let update_data = self.hasher.finalize_reset();
+        result.copy_from_slice(&update_data[..32]);
+        self.hasher.update(&update_data);
         result
     }
 
-    fn compute_challenge_in_field<F: PrimeField>(&mut self) -> F {
-        F::from_random_bytes(&self.hasher.finalize_reset()).unwrap()
+    // Method to transform the challenge into a field element
+    pub fn transform_challenge_to_field<F: PrimeField>(&mut self) -> F {
+        let update_data = self.hasher.finalize_reset();
+        F::from_random_bytes(&update_data).expect("Failed to convert bytes to field element")
     }
 }
