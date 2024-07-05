@@ -3,5 +3,5 @@
 members = [ 
      "fiat_shamir_transcript",
      "polynomials", 
-     "shamir_secret_sharing",
+     "shamir_secret_sharing", "sumcheck",
 ]
