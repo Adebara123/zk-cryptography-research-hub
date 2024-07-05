@@ -401,6 +401,10 @@ dependencies = [
 [[package]]
 name = "sumcheck"
 version = "0.1.0"
+dependencies = [
+ "ark-ff",
+ "ark-test-curves",
+]
 
 [[package]]
 name = "syn"
