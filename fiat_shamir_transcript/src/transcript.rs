@@ -2,7 +2,7 @@ use sha3::{Keccak256, Digest};
 use ark_ff::PrimeField;
 
 // Define data structure
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Transcript {
     hasher: Keccak256,
 }
@@ -21,7 +21,7 @@ impl Transcript {
     }
 
     // Method to sample a challenge from the hasher
-    pub fn sample_challenge(&mut self) -> [u8; 32] {
+    pub fn sample_challenges(&mut self) -> [u8; 32] {
         let mut result = [0_u8; 32];
         let update_data = self.hasher.finalize_reset();
         result.copy_from_slice(&update_data[..32]);
@@ -29,9 +29,14 @@ impl Transcript {
         result
     }
 
-    // Method to transform the challenge into a field element
-    pub fn transform_challenge_to_field<F: PrimeField>(&mut self) -> F {
+    pub fn sample_challenge<F: PrimeField>(&mut self) -> F {
         let update_data = self.hasher.finalize_reset();
         F::from_random_bytes(&update_data).expect("Failed to convert bytes to field element")
     }
+
+    // Method to transform the challenge into a field element
+    // pub fn transform_challenge_to_field<F: PrimeField>(&mut self) -> F {
+    //     let update_data = self.hasher.finalize_reset();
+    //     F::from_random_bytes(&update_data).expect("Failed to convert bytes to field element")
+    // }
 }

@@ -1,20 +1,23 @@
 
 use ark_ff::Field;
-use ark_ff::PrimeField;
+use ark_ff::{BigInteger, PrimeField};
+use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
+use std::ops::{Add, AddAssign};
+
 
 use super::utiles::generate_pairs;
 
 
 // The multilinear implementation follows ther assumed eveluation by the boolean hypercube 
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq, Eq, Hash, Default, Debug, CanonicalSerialize, CanonicalDeserialize)]
 
 pub struct MultiLinearPolynomial<F: Field> {
     //veriables is the amount of variables in the poly
-    variables: usize,
+    pub variables: usize,
 
     // array of evaluations from the boolean hypercube for the said poly
-    evaluations: Vec<F>
+    pub evaluations: Vec<F>
 }
 
 impl <F: PrimeField> MultiLinearPolynomial<F> {
@@ -32,6 +35,11 @@ impl <F: PrimeField> MultiLinearPolynomial<F> {
             evaluations: evaluations
         }
     }
+
+    pub fn zero(num_vars: usize) -> Self {
+        Self::new( num_vars, vec![F::zero(); 1 << num_vars])
+    }
+
 
 
     pub fn add(&self, other: Self) -> Self {
@@ -109,6 +117,25 @@ impl <F: PrimeField> MultiLinearPolynomial<F> {
         }
     }
 
+    pub fn partial_evaluations(&self, evaluation_points: Vec<F>, variable_indices: Vec<usize>) -> Self {
+        let mut eval_polynomial = self.clone();
+
+        if evaluation_points.len() != variable_indices.len() {
+            panic!(
+                "The length of evaluation_points and variable_indices should be the same: {}, {}",
+                evaluation_points.len(),
+                variable_indices.len()
+            );
+        }
+
+        for i in 0..evaluation_points.len() {
+            eval_polynomial =
+                eval_polynomial.partial_eval(evaluation_points[i], variable_indices[i]);
+        }
+
+        eval_polynomial
+    }
+
     
 
     pub fn eval_full(&self, eval_points: &[F]) -> F {
@@ -126,6 +153,38 @@ impl <F: PrimeField> MultiLinearPolynomial<F> {
     }
 
 }
+
+impl<F: PrimeField> MultiLinearPolynomial<F> {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+
+        // Append the number of variables as a single byte (assuming < 256 variables)
+        bytes.push(self.variables as u8);
+
+        // Append each evaluation as a fixed size byte array
+        for eval in &self.evaluations {
+            let big_int = eval.into_bigint().to_bytes_be();
+            bytes.extend_from_slice(&big_int);
+        }
+
+        bytes
+    }
+}
+
+impl<F: PrimeField> AddAssign for MultiLinearPolynomial<F> {
+    fn add_assign(&mut self, other: Self) {
+    
+        if self.variables != other.variables {
+            panic!("The number of variables in the two polynomials must be the same");
+        }
+
+        for i in 0..self.evaluations.len() {
+            self.evaluations[i] += other.evaluations[i];
+        }
+    }
+}
+
+
 
 
 #[cfg(test)]
