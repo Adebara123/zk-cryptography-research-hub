@@ -6,10 +6,10 @@ use crate::utils::*;
 // SumCheckProof structure
 #[derive(Debug, Clone, PartialEq)]
 pub struct SumCheckProof<F: PrimeField> {
-    polynomial: MultiLinearPolynomial<F>,
-    sum: F,
-    round_polynomials: Vec<MultiLinearPolynomial<F>>,
-    initial_round_polynomial: MultiLinearPolynomial<F>,
+    pub polynomial: MultiLinearPolynomial<F>,
+    pub sum: F,
+    pub round_polynomials: Vec<MultiLinearPolynomial<F>>,
+    pub initial_round_polynomial: MultiLinearPolynomial<F>,
 }
 
 impl<F: PrimeField> SumCheckProof<F> {
