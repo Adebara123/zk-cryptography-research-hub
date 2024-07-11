@@ -78,6 +78,32 @@ impl<F: PrimeField> Prover<F> {
 
 
 
+    pub fn generate_sumcheck_proof(&mut self) -> SumCheckProof<F> {
+        self.compute_initial_round_polynomial();
+        let mut all_random_responses = Vec::new();
+
+        let mut current_poly = self.poly.clone();
+
+        for _ in 0..self.poly.variables {
+            let verifier_random_response = self.transcript.sample_challenge();
+            all_random_responses.push(verifier_random_response);
+
+            let next_poly = current_poly.partial_eval(verifier_random_response, 0);
+            self.transcript.append(&next_poly.to_bytes());
+            self.round_polynomials.push(next_poly.clone());
+
+            current_poly = next_poly;
+        }
+
+        SumCheckProof {
+            polynomial: self.poly.clone(),
+            round_polynomials: self.round_polynomials.clone(),
+            initial_round_polynomial: self.initial_round_polynomial.clone(),
+            sum: self.sum,
+        }
+    }
+
+
 }
 
 
@@ -110,7 +136,7 @@ mod tests {
 
 
     #[test]
-    fn test_compute_round_zero_poly() {
+    fn test_compute_intial_round_poly() {
         let poly = MultiLinearPolynomial::new(
             3,
             vec![
