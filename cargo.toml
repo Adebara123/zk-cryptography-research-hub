@@ -5,3 +5,5 @@ members = [ "circuit",
      "polynomials", 
      "shamir_secret_sharing", "sumcheck",
 ]
+
+# [dependencies]
