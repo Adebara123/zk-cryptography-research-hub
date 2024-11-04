@@ -1,4 +1,4 @@
-use ark_ff::PrimeField;
+use ark_ff::{BigInteger, PrimeField};
 
 // Utility functions
 pub fn generate_pairs(len: usize) -> Vec<(usize, usize)> {
@@ -21,4 +21,13 @@ pub fn boolean_hypercube<F: PrimeField>(n: usize) -> Vec<Vec<F>> {
     }
 
     result
+}
+
+
+pub fn vec_to_bytes<F: PrimeField>(poly: &Vec<F>) -> Vec<u8> {
+    let mut bytes = Vec::new();
+    for p in poly {
+        bytes.extend_from_slice(&p.into_bigint().to_bytes_be());
+    }
+    bytes
 }

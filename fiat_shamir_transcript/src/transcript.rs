@@ -34,9 +34,4 @@ impl Transcript {
         F::from_random_bytes(&update_data).expect("Failed to convert bytes to field element")
     }
 
-    // Method to transform the challenge into a field element
-    // pub fn transform_challenge_to_field<F: PrimeField>(&mut self) -> F {
-    //     let update_data = self.hasher.finalize_reset();
-    //     F::from_random_bytes(&update_data).expect("Failed to convert bytes to field element")
-    // }
 }

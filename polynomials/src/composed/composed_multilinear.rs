@@ -79,3 +79,52 @@ impl<F: PrimeField> AddAssign for ComposedMultilinearPolynomial<F> {
         }
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ark_ff::Field;
+    use ark_test_curves::bls12_381::Fr;
+
+    type F = Fr;
+
+    fn create_test_poly() -> MultiLinearPolynomial<F> {
+        MultiLinearPolynomial::new(2, vec![F::from(1), F::from(2), F::from(3), F::from(4)])
+    }
+
+    fn create_test_composed_poly() -> ComposedMultilinearPolynomial<F> {
+        let poly1 = create_test_poly();
+        let poly2 = MultiLinearPolynomial::new(2, vec![F::from(0), F::from(1), F::from(1), F::from(2)]);
+        ComposedMultilinearPolynomial::new(vec![poly1, poly2])
+    }
+
+    #[test]
+    fn test_new() {
+        let composed = create_test_composed_poly();
+        assert_eq!(composed.polys.len(), 2);
+        assert_eq!(composed.polys[0].variables, 2);
+        assert_eq!(composed.polys[1].variables, 2);
+    }
+
+    #[test]
+    #[should_panic(expected = "All polynomials must have the same number of variables")]
+    fn test_new_different_variables() {
+        let poly1 = create_test_poly();
+        let poly2 = MultiLinearPolynomial::new(3, vec![F::from(0); 8]);
+        ComposedMultilinearPolynomial::new(vec![poly1, poly2]);
+    }
+
+    #[test]
+    fn test_evaluation() {
+
+        let mle1 = MultiLinearPolynomial::new(2, vec![F::from(0), F::from(1), F::from(2), F::from(3)]);
+        let mle2 = MultiLinearPolynomial::new(2, vec![F::from(0), F::from(0), F::from(0), F::from(1)]);
+
+        let polys = ComposedMultilinearPolynomial::new(vec![mle1, mle2]);
+        let evaluation = polys.evaluate(&vec![F::from(2), F::from(3)]);
+
+        assert_eq!(evaluation, F::from(42));
+    }
+
+}
