@@ -75,7 +75,7 @@ impl<F: PrimeField> ComposedSumcheck<F> {
         round_poly
     }
 
-    pub fn verify(&self, proof: &ComposedSumcheckProof<F>) -> bool {
+    pub fn verify(&self, proof: &ComposedSumcheckProof<F>, sum: F) -> bool {
         let mut transcript = Transcript::new();
         let mut current_sum = self.sum;
         let mut challenges = Vec::new();
@@ -128,5 +128,34 @@ mod tests {
     
    
 
-  
+    #[test]
+    fn test_calculate_sum() {
+
+        let poly1 = MultiLinearPolynomial::new(2, vec![F::from(0), F::from(1), F::from(2), F::from(3)]);
+        let poly2 = MultiLinearPolynomial::new(2, vec![F::from(0), F::from(0), F::from(0), F::from(1)]);
+        let composed_poly =  ComposedMultilinearPolynomial::new(vec![poly1, poly2]);
+
+        let sum = ComposedSumcheck::new(composed_poly).sum;
+        assert_eq!(sum, F::from(3)); 
+
+        let poly1 = MultiLinearPolynomial::new(2, vec![F::from(3), F::from(3), F::from(5), F::from(5)]);
+        let poly2 = MultiLinearPolynomial::new(2, vec![F::from(0), F::from(0), F::from(0), F::from(1)]);
+        let composed_poly =  ComposedMultilinearPolynomial::new(vec![poly1, poly2]);
+
+        let sum =  ComposedSumcheck::new(composed_poly).sum;
+        assert_eq!(sum, F::from(5));
+    }
+
+
+    #[test]
+    fn test_sum_check_proof() {
+        let poly1 = MultiLinearPolynomial::new(2, vec![F::from(0), F::from(1), F::from(2), F::from(3)]);
+        let poly2 = MultiLinearPolynomial::new(2, vec![F::from(0), F::from(0), F::from(0), F::from(1)]);
+        let composed_poly =  ComposedMultilinearPolynomial::new(vec![poly1, poly2]);
+
+        let sumcheck =  ComposedSumcheck::new(composed_poly);
+        let (proof, _challenges) = &sumcheck.prove();
+        let verifer: bool = sumcheck.verify(&proof, sumcheck.sum);
+        assert_eq!(verifer, true);
+    }
 }
