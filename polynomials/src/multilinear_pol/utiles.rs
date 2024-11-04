@@ -44,11 +44,19 @@ mod tests {
     }
 
     #[test] 
-    fn test_generate_pairs_index_3_evealaution_length_8() {
+    fn test_generate_pairs_index_2_evalaution_length_8() {
         let eval = 8;
         let ind = 2;
 
         assert_eq!(generate_pairs(eval, ind), [(0,1), (2,3), (4,5), (6,7)]);
+    }
+
+    #[test] 
+    fn test_generate_pairs_1_evaluation_length_8() {
+        let eval = 8;
+        let ind = 1;
+
+        assert_eq!(generate_pairs(eval, ind), [(0,2), (1,3), (4,6), (5,7)]);
     }
 
 
